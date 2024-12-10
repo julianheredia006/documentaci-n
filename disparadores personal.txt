@@ -1,0 +1,134 @@
+DELIMITER //
+
+CREATE TRIGGER validar_asignacion_ambulancia
+BEFORE INSERT ON personal
+FOR EACH ROW
+BEGIN
+    DECLARE total_conductores INT;
+    DECLARE total_paramedicos INT;
+    DECLARE total_enfermeros INT;
+
+    -- Validar que no se pueda asignar ambulancia a un administrador
+    IF NEW.rol_id = (SELECT id FROM roles WHERE nombre = 'Administrador') AND NEW.ambulancia_id IS NOT NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No se puede asignar una ambulancia a un administrador.';
+    END IF;
+
+    -- Validar asignación de conductor
+    IF NEW.rol_id = (SELECT id FROM roles WHERE nombre = 'Conductor') THEN
+        SELECT COUNT(*) INTO total_conductores 
+        FROM personal 
+        WHERE ambulancia_id = NEW.ambulancia_id AND rol_id = (SELECT id FROM roles WHERE nombre = 'Conductor');
+        IF total_conductores >= 1 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'La ambulancia ya tiene un conductor asignado.';
+        END IF;
+    END IF;
+
+    -- Validar asignación de paramédico
+    IF NEW.rol_id = (SELECT id FROM roles WHERE nombre = 'Paramédico') THEN
+        SELECT COUNT(*) INTO total_paramedicos 
+        FROM personal 
+        WHERE ambulancia_id = NEW.ambulancia_id AND rol_id = (SELECT id FROM roles WHERE nombre = 'Paramédico');
+        IF total_paramedicos >= 1 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'La ambulancia ya tiene un paramédico asignado.';
+        END IF;
+    END IF;
+
+    -- Validar asignación de enfermero
+    IF NEW.rol_id = (SELECT id FROM roles WHERE nombre = 'Enfermero') THEN
+        SELECT COUNT(*) INTO total_enfermeros 
+        FROM personal 
+        WHERE ambulancia_id = NEW.ambulancia_id AND rol_id = (SELECT id FROM roles WHERE nombre = 'Enfermero');
+        IF total_enfermeros >= 1 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'La ambulancia ya tiene un enfermero asignado.';
+        END IF;
+    END IF;
+
+    -- Validar que no se pueda asignar más de 3 roles por ambulancia
+    IF (
+        (SELECT COUNT(*) 
+         FROM personal 
+         WHERE ambulancia_id = NEW.ambulancia_id) >= 3
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'La ambulancia ya tiene asignadas las 3 personas permitidas.';
+    END IF;
+
+END;
+//
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE TRIGGER validar_actualizacion_asignacion_ambulancia
+BEFORE UPDATE ON personal
+FOR EACH ROW
+BEGIN
+    DECLARE total_conductores INT;
+    DECLARE total_paramedicos INT;
+    DECLARE total_enfermeros INT;
+
+    -- Validar que no se pueda asignar ambulancia a un administrador
+    IF NEW.rol_id = (SELECT id FROM roles WHERE nombre = 'Administrador') AND NEW.ambulancia_id IS NOT NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'No se puede asignar una ambulancia a un administrador.';
+    END IF;
+
+    -- Validar asignación de conductor
+    IF NEW.rol_id = (SELECT id FROM roles WHERE nombre = 'Conductor') THEN
+        SELECT COUNT(*) INTO total_conductores 
+        FROM personal 
+        WHERE ambulancia_id = NEW.ambulancia_id 
+          AND rol_id = (SELECT id FROM roles WHERE nombre = 'Conductor') 
+          AND id != NEW.id;
+        IF total_conductores >= 1 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'La ambulancia ya tiene un conductor asignado.';
+        END IF;
+    END IF;
+
+    -- Validar asignación de paramédico
+    IF NEW.rol_id = (SELECT id FROM roles WHERE nombre = 'Paramédico') THEN
+        SELECT COUNT(*) INTO total_paramedicos 
+        FROM personal 
+        WHERE ambulancia_id = NEW.ambulancia_id 
+          AND rol_id = (SELECT id FROM roles WHERE nombre = 'Paramédico') 
+          AND id != NEW.id;
+        IF total_paramedicos >= 1 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'La ambulancia ya tiene un paramédico asignado.';
+        END IF;
+    END IF;
+
+    -- Validar asignación de enfermero
+    IF NEW.rol_id = (SELECT id FROM roles WHERE nombre = 'Enfermero') THEN
+        SELECT COUNT(*) INTO total_enfermeros 
+        FROM personal 
+        WHERE ambulancia_id = NEW.ambulancia_id 
+          AND rol_id = (SELECT id FROM roles WHERE nombre = 'Enfermero') 
+          AND id != NEW.id;
+        IF total_enfermeros >= 1 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'La ambulancia ya tiene un enfermero asignado.';
+        END IF;
+    END IF;
+
+    -- Validar que no se pueda asignar más de 3 roles por ambulancia
+    IF (
+        (SELECT COUNT(*) 
+         FROM personal 
+         WHERE ambulancia_id = NEW.ambulancia_id AND id != NEW.id) >= 3
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'La ambulancia ya tiene asignadas las 3 personas permitidas.';
+    END IF;
+
+END;
+//
+
+DELIMITER ;
+

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Pacientes - AMBUSOS</title>
+    <link rel="stylesheet" href="../css/tablas.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+
+<body>
+  <!------------------------------------------------- Header ---------------------------------------------------->
+
+  <header class="header">
+    <div class="topheader">
+        <div class="wrapper">
+            </div>
+            <nav>
+                <a onclick="location.href='../tipo_de_persona.html'"><i class="fa-regular fa-user"></i> Inicia
+                    sesion</button>
+            </nav>
+        </div>
+    </div>
+
+    
+    <div class="wrapper">
+        <div class="logo">
+            <a onclick="location.href='../index.html'"> <img src="../img/logo_2.png" width="300px"></a>
+        </div>
+        <nav>
+            <a href="../index.html"></i>Inicio</a>
+            <a href="../mapa_de_usuario.html">Mapa</a>
+            <a href="../apartados_ambu.html">Otros</a>
+        </nav>
+    </div>
+</header>
+<!---------------------------------------------------------------------------------------------------------->
+<div class="texto-central text-center my-5">
+    <h1>reporte de viaje</h1>
+</div>
+
+<section class="container">
+    <h4>Lista de Reportes</h4>
+    <div class="table-responsive">
+        <table id="patientTable" class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Ambulancia Asignada</th>
+                    <th>Tiempo</th>
+                    <th>Paciente</th>
+                    <th>Punto I</th>
+                    <th>Punto F</th>
+                    <th>Accidente ID</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td class="editable">A1</td>
+                    <td class="editable">10:30</td>
+                    <td class="editable">Juan Pérez</td>
+                    <td class="editable">Calle 10</td>
+                    <td class="editable">Carrera 20</td>
+                    <td class="editable">12345</td>
+                    <td>
+                        <button class="btn btn-primary btn-edit mb-2">Editar</button>
+                        <button class="btn btn-danger btn-delete">Eliminar</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <button id="btnAdd" class="btn btn-success mt-3">Agregar</button>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const table = document.getElementById('patientTable').getElementsByTagName('tbody')[0];
+        const btnAdd = document.getElementById('btnAdd');
+
+        // Agregar nueva fila
+        btnAdd.addEventListener('click', function () {
+            const newRow = table.insertRow();
+            const newId = table.rows.length;
+
+            // Crear celdas en la nueva fila
+            const columnCount = 8; // Número total de columnas
+            for (let i = 0; i < columnCount; i++) {
+                const cell = newRow.insertCell(i);
+                if (i === 0) {
+                    // Asignar el ID auto-generado
+                    cell.textContent = newId;
+                } else if (i === columnCount - 1) {
+                    // Crear las acciones (Editar/Eliminar)
+                    cell.innerHTML = `
+                        <button class="btn btn-primary btn-edit mb-2">Editar</button>
+                        <button class="btn btn-danger btn-delete">Eliminar</button>
+                    `;
+                } else {
+                    // Celdas editables vacías
+                    cell.textContent = '';
+                    cell.classList.add('editable');
+                }
+            }
+
+            // Agregar eventos a los botones en la nueva fila
+            newRow.querySelector('.btn-edit').addEventListener('click', editRow);
+            newRow.querySelector('.btn-delete').addEventListener('click', deleteRow);
+        });
+
+        // Editar fila
+        function editRow() {
+            const row = this.closest('tr');
+            const editableCells = row.querySelectorAll('.editable');
+            if (this.textContent === 'Editar') {
+                editableCells.forEach(cell => cell.setAttribute('contenteditable', 'true'));
+                this.textContent = 'Guardar';
+            } else {
+                if (validateRow(row)) {
+                    editableCells.forEach(cell => cell.setAttribute('contenteditable', 'false'));
+                    this.textContent = 'Editar';
+                } else {
+                    alert('Todos los campos deben estar llenos.');
+                }
+            }
+        }
+
+        // Validar que no existan campos vacíos
+        function validateRow(row) {
+            return Array.from(row.querySelectorAll('.editable')).every(cell => cell.textContent.trim() !== '');
+        }
+
+        // Eliminar fila
+        function deleteRow() {
+            const row = this.closest('tr');
+            row.remove();
+            updateIds();
+        }
+
+        // Actualizar IDs de filas
+        function updateIds() {
+            const rows = table.getElementsByTagName('tr');
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].cells[0].textContent = i + 1;
+            }
+        }
+    });
+</script>
+
+
+<!------------------------------- Footer - pie de pagina --------------------------------------------------->
+
+<footer class="pie-pagina">
+    <div class="grupo-1">
+        <div class="box">
+            <span>
+                <a href="../index.html">
+                    <img src="../img/logo.png" alt="Logo de Liber-Arte" width="100px">
+                </a>
+            </span>
+        </div>
+        <div class="box">
+            <h2>-SOBRE NOSOTROS</h2>
+            <p>Ambusos: tu aliado en emergencias. Brindamos atención médica rápida y confiable cuando más lo necesitas </p>
+        </div>
+    </div>
+    <div class="grupo-2">
+        <small>&copy; 2024 <b>AMBUSOS</b> - Todos los Derechos Reservados.</small>
+    </div>
+</footer>
+
+<!------------------------------- Footer - pie de pagina --------------------------------------------------->
+
+</body>
+
+</html>
